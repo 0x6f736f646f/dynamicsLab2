@@ -11,6 +11,7 @@ function lab2
     transmission_angles  = get_transmission_angles(a,b,c,d,40,60,1);
     input_angles = 40:1:60;
     figure;
+    title("Transmission angles vs Input angles");
     plot(input_angles, transmission_angles);
     xlabel("Input angles");
     ylabel("Transmission angles");
@@ -21,7 +22,14 @@ function lab2
                 sprintf("Some transmission angles do not guarantee a smooth rotation")
             end
      %-----------part c ---------------
-     
+     [a1, b1] = applyRegression(theta2, theta4);
+      output_angles = arrayfun(@(x) x*b1 + a1 , input_angles);
+      structural_errors = get_structural_errors(input_angles, output_angles, link_ratios);
+      figure;
+      title("Structural errors Vs Input angles");
+      plot(input_angles, structural_errors);
+      xlabel("Input angles");
+      ylabel("Structural errors");
 end
 
 function link_ratios  = get_link_ratios(theta2, theta4)
@@ -73,4 +81,22 @@ function structuralErrors = get_structural_errors(theta2, theta4, link_ratios)
         er1 = link_ratios(1)*cosd(theta4(i)) - link_ratios(2)*cosd(theta2(i)) + link_ratios(3) - cosd(theta2(i) - theta4(i));
         structuralErrors(i) = er1;
     end
+end
+% --- regression ------
+function [a,b] = applyRegression(theta2, theta4)
+    anglesData = table(theta2, theta4);
+    Tdata = rowfun(@generateRegressionTable, anglesData, 'OutputVariableNames',{'theta2' 'theta4' 'theta2Sqr' 'theta2Xtheta4'});
+    x = table2array(Tdata(:,1)); sx = sum(x);
+    y = table2array(Tdata(:,2)); sy = sum(y);
+    xSqr = table2array(Tdata(:,3)); sxSqr = sum(xSqr);
+    xy = table2array(Tdata(:,4)); sxy = sum(xy);
+
+    b = ((length(theta2) * sxy) - (sx*sy))/((length(theta2) * sxSqr) - ((sx)^2));
+    a = (sy - (b * sx))/length(theta2);
+end 
+function [theta2, theta4, theta2Sqr, theta2Xtheta4] = generateRegressionTable(O2, O4)
+    theta2 = O2;
+    theta4 = O4;
+    theta2Sqr = O2^2;
+    theta2Xtheta4 = O2 * O4;
 end
