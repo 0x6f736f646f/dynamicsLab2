@@ -4,9 +4,8 @@ function lab2
     theta2  = [40; 45; 50; 55; 60]; 
     theta4  = [70; 76; 83; 91; 100];
     link_ratios = get_link_ratios(theta2, theta4);
-    disp(link_ratios);
     [a,b,c,d] = get_link_lengths(link_ratios);
-    sprintf("Crank: %.4f \n Coupler: %.4f \n Follower: %.4f \n  Fixed: %.4f\n",a,b,c,d);
+    fprintf("Crank: %.4f mm\n Coupler: %.4f mm\n Follower: %.4f mm\n  Fixed: %.4f mm\n",a,b,c,d);
     %----------- part b --------------
     transmission_angles  = get_transmission_angles(a,b,c,d,40,60,1);
     input_angles = 40:1:60;
@@ -17,9 +16,9 @@ function lab2
     ylabel("Transmission angles");
    % commenting  on the quality of the transmission angles
             if (all(transmission_angles >= 40)) || (all(transmission_angles <= 140))
-                sprintf("All the transmission angles guarantee a smooth rotation");
+                fprintf("All the transmission angles guarantee a smooth rotation\n");
             else
-                sprintf("Some transmission angles do not guarantee a smooth rotation")
+                fprintf("Some transmission angles do not guarantee a smooth rotation\n")
             end
      %-----------part c ---------------
      [a1, b1] = applyRegression(theta2, theta4);
