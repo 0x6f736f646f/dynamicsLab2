@@ -1,6 +1,7 @@
 function lab2
     % Values to theta2 and theta4 are  provided in the question
     %------------part a-------------
+    % angles are provided in the lab description
     theta2  = [40; 45; 50; 55; 60]; 
     theta4  = [70; 76; 83; 91; 100];
     link_ratios = get_link_ratios(theta2, theta4);
@@ -49,7 +50,7 @@ function link_ratios  = get_link_ratios(theta2, theta4)
        A = [A; temp1];
        b = [b; temp2];
    end
-   link_ratios = lsqr(A,b);
+   link_ratios = lsqr(A,b);% lsqr applies the least square method to solve the matrix for the 3 unknowns
 end
 function [a,b,c,d] = get_link_lengths(link_ratios)
 % get_link_lengths uses the link ratios and the fixed link to find the
@@ -62,10 +63,10 @@ function [a,b,c,d] = get_link_lengths(link_ratios)
     b = abs(sqrt(a^2  + c^2 + d^2 -(link_ratios(3) * 2 * a * c)));
 end
 function transmission_angles = get_transmission_angles(a,b,c,d,lower_limit, upper_limit, steps)
-% Transmission anngles are calculated using the obtained link lengths and
+% Transmission angles are calculated using the obtained link lengths and
 % and the respective input angles 
-    transmission_angles = zeros(1, ((upper_limit - lower_limit)/steps));
-    j = 1;
+    transmission_angles = zeros(1, ((upper_limit - lower_limit)/steps));% initializing  array with zeros before use.
+    j = 1;% loop counter
     for i = lower_limit:steps:upper_limit
         m = acosd(((b^2 + c^2) - (a^2 + d^2) + (2 * a * d * cosd(i))) / (2 * b * c));
         transmission_angles(j) = m;
@@ -82,18 +83,23 @@ function structuralErrors = get_structural_errors(theta2, theta4, link_ratios)
     end
 end
 % --- regression ------
+% An output function has to be sorted  in the form of an equation of a straight line.
+% Using statistical simple linear regression is one way to go.
 function [a,b] = applyRegression(theta2, theta4)
-    anglesData = table(theta2, theta4);
+    anglesData = table(theta2, theta4);% generate a table of O2 and O4
+    % add more columns to the table: O2^2  and (O2 xO4) using a callback function. The extra columns will be useful in the 
+    % ... in the calculation of regression coefficients.
     Tdata = rowfun(@generateRegressionTable, anglesData, 'OutputVariableNames',{'theta2' 'theta4' 'theta2Sqr' 'theta2Xtheta4'});
-    x = table2array(Tdata(:,1)); sx = sum(x);
-    y = table2array(Tdata(:,2)); sy = sum(y);
-    xSqr = table2array(Tdata(:,3)); sxSqr = sum(xSqr);
-    xy = table2array(Tdata(:,4)); sxy = sum(xy);
+    x = table2array(Tdata(:,1)); sx = sum(x); % extract column x, make it an array and get the sum of its elements
+    y = table2array(Tdata(:,2)); sy = sum(y); % extract column y, make it an array and get the sum of its elements
+    xSqr = table2array(Tdata(:,3)); sxSqr = sum(xSqr);% extract column x^2, make it an array and get the sum of its elements
+    xy = table2array(Tdata(:,4)); sxy = sum(xy);% extract column X*Y, make it an array and get the sum of its elements
 
-    b = ((length(theta2) * sxy) - (sx*sy))/((length(theta2) * sxSqr) - ((sx)^2));
-    a = (sy - (b * sx))/length(theta2);
+    b = ((length(theta2) * sxy) - (sx*sy))/((length(theta2) * sxSqr) - ((sx)^2)); % get the coefficient b
+    a = (sy - (b * sx))/length(theta2);% get the coefficient a
 end 
 function [theta2, theta4, theta2Sqr, theta2Xtheta4] = generateRegressionTable(O2, O4)
+    % Callback function to generate the table for regression
     theta2 = O2;
     theta4 = O4;
     theta2Sqr = O2^2;
