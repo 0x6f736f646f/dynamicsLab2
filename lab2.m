@@ -1,3 +1,12 @@
+%	Reg					Name
+%	___					____
+%	ENM221-0058/2017	Karimi Kelvin Gitu
+%	ENM221-0068/2017	Kipng'eno Erick Koech		
+%	ENM221-0091/2017	Osodo Rodney David	
+%	ENM221-0273/2017	Kimani Claudio
+
+%------------------------main--------------------------%
+
 function lab2
     % Values to theta2 and theta4 are  provided in the question
     %------------part a-------------
