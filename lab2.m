@@ -22,9 +22,20 @@ function lab2
                 fprintf("Some transmission angles do not guarantee a smooth rotation\n")
             end
      %-----------part c ---------------
-     [a1, b1] = applyRegression(theta2, theta4);
-      output_angles = arrayfun(@(x) x*b1 + a1 , input_angles);
-      structural_errors = get_structural_errors(input_angles, output_angles, link_ratios);
+     % [a1, b1] = applyRegression(theta2, theta4);
+      % output_angles = arrayfun(@(x) x*b1 + a1 , input_angles);
+      %structural errors
+        A = sind(input_angles);
+        B = cosd(input_angles)-link_ratios(1);
+        C = link_ratios(3) - link_ratios(2)*cosd(input_angles);
+
+        tan_1 = (A + sqrt(A.^2 + B.^2 -C.^2))./(B+C);
+        %disp(tan_1)
+        tan_2 = (A - sqrt(A.^2 + B.^2 -C.^2))./(B+C);
+        %disp(tan_2)
+        out_1 = 2*atand(tan_1);
+        out_2 = 2*atand(tan_2);
+      structural_errors = get_structural_errors(input_angles, out_2, link_ratios);
       figure;
       title("Structural errors Vs Input angles");
       plot(input_angles, structural_errors);
@@ -69,7 +80,7 @@ function transmission_angles = get_transmission_angles(a,b,c,d,lower_limit, uppe
     j = 1;% loop counter
     for i = lower_limit:steps:upper_limit
         m = acosd(((b^2 + c^2) - (a^2 + d^2) + (2 * a * d * cosd(i))) / (2 * b * c));
-        transmission_angles(j) = m;
+        transmission_angles(j) = m;%structural errors
         j = j + 1;
     end
 end
@@ -81,27 +92,4 @@ function structuralErrors = get_structural_errors(theta2, theta4, link_ratios)
         er1 = link_ratios(1)*cosd(theta4(i)) - link_ratios(2)*cosd(theta2(i)) + link_ratios(3) - cosd(theta2(i) - theta4(i));
         structuralErrors(i) = er1;
     end
-end
-% --- regression ------
-% An output function has to be sorted  in the form of an equation of a straight line.
-% Using statistical simple linear regression is one way to go.
-function [a,b] = applyRegression(theta2, theta4)
-    anglesData = table(theta2, theta4);% generate a table of O2 and O4
-    % add more columns to the table: O2^2  and (O2 xO4) using a callback function. The extra columns will be useful in the 
-    % ... in the calculation of regression coefficients.
-    Tdata = rowfun(@generateRegressionTable, anglesData, 'OutputVariableNames',{'theta2' 'theta4' 'theta2Sqr' 'theta2Xtheta4'});
-    x = table2array(Tdata(:,1)); sx = sum(x); % extract column x, make it an array and get the sum of its elements
-    y = table2array(Tdata(:,2)); sy = sum(y); % extract column y, make it an array and get the sum of its elements
-    xSqr = table2array(Tdata(:,3)); sxSqr = sum(xSqr);% extract column x^2, make it an array and get the sum of its elements
-    xy = table2array(Tdata(:,4)); sxy = sum(xy);% extract column X*Y, make it an array and get the sum of its elements
-
-    b = ((length(theta2) * sxy) - (sx*sy))/((length(theta2) * sxSqr) - ((sx)^2)); % get the coefficient b
-    a = (sy - (b * sx))/length(theta2);% get the coefficient a
-end 
-function [theta2, theta4, theta2Sqr, theta2Xtheta4] = generateRegressionTable(O2, O4)
-    % Callback function to generate the table for regression
-    theta2 = O2;
-    theta4 = O4;
-    theta2Sqr = O2^2;
-    theta2Xtheta4 = O2 * O4;
 end
